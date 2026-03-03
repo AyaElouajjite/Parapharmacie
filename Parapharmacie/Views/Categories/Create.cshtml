@@ -1,0 +1,21 @@
+@model Parapharmacie.Models.Category
+@{
+    ViewData["Title"] = "Nouvelle catégorie";
+}
+
+<h2>Nouvelle catégorie</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <button class="btn btn-primary">Enregistrer</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Annuler</a>
+</form>
+
+
+
+

@@ -1,0 +1,38 @@
+@model Parapharmacie.Models.User
+@{
+    ViewData["Title"] = "Nouvel utilisateur";
+}
+
+<h2>Nouvel utilisateur</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="mb-3">
+        <label class="form-label">Login</label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Mot de passe</label>
+        <input asp-for="Password" class="form-control" />
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Rôle</label>
+        <select asp-for="Role" class="form-select" asp-items="Html.GetEnumSelectList<Parapharmacie.Models.Role>()"></select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Client Id (optionnel)</label>
+        <input asp-for="CustomerId" class="form-control" type="number" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Fournisseur Id (optionnel)</label>
+        <input asp-for="SupplierId" class="form-control" type="number" />
+    </div>
+    <button class="btn btn-primary">Enregistrer</button>
+    <a class="btn btn-outline-secondary" asp-action="Index">Annuler</a>
+</form>
+
+
+
+

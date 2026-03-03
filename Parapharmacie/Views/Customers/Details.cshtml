@@ -1,0 +1,49 @@
+@model Parapharmacie.Models.Customer
+@{
+    ViewData["Title"] = "Détails client";
+    var achats = ViewBag.Purchases as List<Parapharmacie.Models.Sale> ?? new();
+}
+
+<h2>@Model.FullName</h2>
+<dl class="row">
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Email</dd>
+    <dt class="col-sm-3">Téléphone</dt>
+    <dd class="col-sm-9">@Model.Phone</dd>
+    <dt class="col-sm-3">Points fidélité</dt>
+    <dd class="col-sm-9">@Model.LoyaltyPoints</dd>
+</dl>
+
+<h4>Historique des achats</h4>
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Total</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (achats.Any())
+        {
+            foreach (var sale in achats)
+            {
+                <tr>
+                    <td>@sale.Date.ToLocalTime().ToString("g")</td>
+                    <td>@sale.Total.ToString("0.00") €</td>
+                    <td><a asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">Facture</a></td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="3">Aucun achat pour le moment.</td></tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-outline-secondary" asp-action="Index">Retour</a>
+
+
+
+

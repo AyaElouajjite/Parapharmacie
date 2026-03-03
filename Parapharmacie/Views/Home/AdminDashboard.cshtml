@@ -1,0 +1,148 @@
+@{
+    ViewData["Title"] = "Tableau de bord - Administrateur";
+    var products = ViewBag.Products as IEnumerable<Parapharmacie.Models.Product> ?? new List<Parapharmacie.Models.Product>();
+    var sales = ViewBag.Sales as IEnumerable<Parapharmacie.Models.Sale> ?? new List<Parapharmacie.Models.Sale>();
+    var customers = ViewBag.Customers as IEnumerable<Parapharmacie.Models.Customer> ?? new List<Parapharmacie.Models.Customer>();
+    var users = ViewBag.Users as IEnumerable<Parapharmacie.Models.User> ?? new List<Parapharmacie.Models.User>();
+    var categories = ViewBag.Categories as IEnumerable<Parapharmacie.Models.Category> ?? new List<Parapharmacie.Models.Category>();
+    var supplierOrders = ViewBag.SupplierOrders as IEnumerable<Parapharmacie.Models.SupplierOrder> ?? new List<Parapharmacie.Models.SupplierOrder>();
+}
+
+<div class="container-fluid">
+    <h1 class="text-dark mb-4">Tableau de bord - Administrateur</h1>
+
+    <div class="alert alert-info">
+        <strong>Rôle :</strong> Administrateur - Vous gérez les utilisateurs, catégories et paramètres du système.
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@products.Count()</div>
+                    <div class="text-white">Produits actifs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@customers.Count()</div>
+                    <div class="text-white">Clients</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@users.Count()</div>
+                    <div class="text-white">Utilisateurs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@categories.Count()</div>
+                    <div class="text-white">Catégories</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Actions rapides</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-primary" asp-controller="Users" asp-action="Index">👥 Gérer les utilisateurs</a>
+                <a class="btn btn-success" asp-controller="Categories" asp-action="Index">📁 Gérer les catégories</a>
+                <a class="btn btn-info" asp-controller="Products" asp-action="Index">📦 Voir les produits</a>
+                <a class="btn btn-warning" asp-controller="Customers" asp-action="Index">👤 Voir les clients</a>
+                <a class="btn btn-secondary" asp-controller="Sales" asp-action="Index">💰 Voir les ventes</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stocks à surveiller -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Stocks à surveiller</h3>
+            @{
+                var lowStock = products.Where(p => p.Stock <= p.ReorderLevel).ToList();
+            }
+            @if (!lowStock.Any())
+            {
+                <div class="alert alert-success">Aucun produit en alerte de stock.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Stock actuel</th>
+                            <th>Seuil d'alerte</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in lowStock)
+                        {
+                            <tr class="table-warning">
+                                <td>@p.Name</td>
+                                <td><strong>@p.Stock</strong></td>
+                                <td>@p.ReorderLevel</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="Products" asp-action="Edit" asp-route-id="@p.Id">Modifier</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Dernières ventes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Dernières ventes</h3>
+            @{
+                var recentSales = sales.OrderByDescending(s => s.Date).Take(5).ToList();
+            }
+            @if (!recentSales.Any())
+            {
+                <div class="alert alert-info">Aucune vente enregistrée.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sale in recentSales)
+                        {
+                            <tr>
+                                <td>@sale.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(sale.Customer?.FullName ?? "Non renseigné")</td>
+                                <td><strong>@sale.Total.ToString("0.00") €</strong></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+

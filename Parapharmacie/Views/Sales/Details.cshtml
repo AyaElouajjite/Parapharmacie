@@ -1,0 +1,46 @@
+@model Parapharmacie.Models.Sale
+@{
+    ViewData["Title"] = "Facture";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Facture #@Model.Id</h2>
+    <a class="btn btn-outline-secondary" asp-action="Index">Retour</a>
+</div>
+
+<p>Date : @Model.Date.ToLocalTime().ToString("f")</p>
+<p>Client : @(Model.Customer?.FullName ?? "Visiteur")</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Qté</th>
+            <th>PU</th>
+            <th>Remise %</th>
+            <th>Total ligne</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.Product?.Name</td>
+                <td>@item.Quantity</td>
+                <td>@item.UnitPrice.ToString("0.00") €</td>
+                <td>@item.DiscountPercent</td>
+                <td>@item.LineTotal.ToString("0.00") €</td>
+            </tr>
+        }
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="4" class="text-end">Total</th>
+            <th>@Model.Total.ToString("0.00") €</th>
+        </tr>
+    </tfoot>
+</table>
+
+
+
+

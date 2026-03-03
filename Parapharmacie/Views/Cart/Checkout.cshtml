@@ -1,0 +1,182 @@
+@model IEnumerable<Parapharmacie.Models.CartItem>
+@{
+    ViewData["Title"] = "Finaliser la commande";
+    decimal subtotal = 0;
+    var customer = ViewBag.Customer as Parapharmacie.Models.Customer;
+}
+
+<div class="container">
+    <h1 class="mb-4 text-dark">Finaliser votre commande</h1>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="text-dark">Récapitulatif de la commande</h5>
+                    </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Produit</th>
+                                <th>Prix unitaire</th>
+                                <th>Quantité</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                if (item.Product != null)
+                                {
+                                    var itemTotal = item.Product.Price * item.Quantity;
+                                    subtotal += itemTotal;
+                                    <tr>
+                                        <td>@item.Product.Name</td>
+                                        <td>@item.Product.Price.ToString("0.00") €</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@itemTotal.ToString("0.00") €</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class="text-end">
+                        <p>Sous-total HT: <strong>@subtotal.ToString("0.00") €</strong></p>
+                        <p>TVA (20%): <strong>@((subtotal * 0.20m).ToString("0.00")) €</strong></p>
+                        <p class="fs-4">Total TTC: <strong class="text-primary">@((subtotal * 1.20m).ToString("0.00")) €</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                    <div class="card-header">
+                        <h5 class="text-dark">Informations de facturation</h5>
+                    </div>
+                <div class="card-body">
+                    @if (customer != null)
+                    {
+                        <p><strong>Nom:</strong> @customer.FullName</p>
+                        @if (!string.IsNullOrEmpty(customer.Email))
+                        {
+                            <p><strong>Email:</strong> @customer.Email</p>
+                        }
+                        @if (!string.IsNullOrEmpty(customer.Phone))
+                        {
+                            <p><strong>Téléphone:</strong> @customer.Phone</p>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted">Vous n'êtes pas connecté. <a href="@Url.Action("Login", "Account")">Connectez-vous</a> pour bénéficier de votre compte fidélité.</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary">
+                    <h5 class="mb-0 text-white">Paiement par carte bancaire</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="ProcessPayment" id="paymentForm">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Titulaire de la carte</label>
+                            <input type="text" name="cardHolder" class="form-control" required 
+                                   value="@(customer?.FullName ?? "")" 
+                                   placeholder="Nom complet" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Numéro de carte</label>
+                            <input type="text" name="cardNumber" class="form-control" required 
+                                   placeholder="1234 5678 9012 3456" 
+                                   maxlength="19" 
+                                   pattern="[0-9\s]{13,19}" />
+                            <small class="form-text text-muted">Format: 13-19 chiffres</small>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Mois d'expiration</label>
+                                <select name="expiryMonth" class="form-select" required>
+                                    <option value="">MM</option>
+                                    @for (int i = 1; i <= 12; i++)
+                                    {
+                                        <option value="@i.ToString("00")">@i.ToString("00")</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Année d'expiration</label>
+                                <select name="expiryYear" class="form-select" required>
+                                    <option value="">AAAA</option>
+                                    @for (int year = DateTime.Now.Year; year <= DateTime.Now.Year + 10; year++)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Code CVV</label>
+                            <input type="text" name="cvv" class="form-control" required 
+                                   placeholder="123" 
+                                   maxlength="4" 
+                                   pattern="[0-9]{3,4}" />
+                            <small class="form-text text-muted">3 ou 4 chiffres au dos de la carte</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Adresse de facturation</label>
+                            <textarea name="billingAddress" class="form-control" required rows="3" 
+                                      placeholder="Rue, Code postal, Ville"></textarea>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            🔒 Votre paiement est sécurisé. Les informations de carte ne sont pas stockées.
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 btn-lg">
+                            💳 Confirmer et payer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Formatage du numéro de carte
+        document.querySelector('input[name="cardNumber"]').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s/g, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // Validation du formulaire
+        document.getElementById('paymentForm').addEventListener('submit', function(e) {
+            const cardNumber = document.querySelector('input[name="cardNumber"]').value.replace(/\s/g, '');
+            if (cardNumber.length < 13 || cardNumber.length > 19) {
+                e.preventDefault();
+                alert('Le numéro de carte doit contenir entre 13 et 19 chiffres.');
+                return false;
+            }
+        });
+    </script>
+}
+

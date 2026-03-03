@@ -1,0 +1,49 @@
+@model Parapharmacie.Models.SupplierOrder
+@{
+    ViewData["Title"] = "Détails commande fournisseur";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Commande #@Model.Id</h2>
+    <a class="btn btn-outline-secondary" asp-action="Index">Retour</a>
+</div>
+
+<p>Fournisseur : @Model.Supplier?.Name</p>
+<p>Date : @Model.OrderDate.ToLocalTime().ToString("g")</p>
+<p>Statut : @Model.Status</p>
+@if (Model.ReceivedDate.HasValue)
+{
+    <p>Réceptionnée le : @Model.ReceivedDate.Value.ToLocalTime().ToString("g")</p>
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Produit</th>
+            <th>Quantité commandée</th>
+            <th>Quantité reçue</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Items)
+        {
+            <tr>
+                <td>@item.Product?.Name</td>
+                <td>@item.QuantityOrdered</td>
+                <td>@item.QuantityReceived</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Status != "Réceptionnée")
+{
+    <form asp-action="Receive" method="post">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button class="btn btn-success">Marquer comme réceptionnée</button>
+    </form>
+}
+
+
+
+

@@ -1,0 +1,152 @@
+@model Parapharmacie.Models.Sale
+@{
+    ViewData["Title"] = "Confirmation d'achat";
+    var cardNumber = ViewBag.CardNumber as string;
+    var cardHolder = ViewBag.CardHolder as string;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow-lg border-success">
+                <div class="card-header bg-success text-white text-center py-4">
+                    <h1 class="mb-0">
+                        ✅ Commande confirmée !
+                    </h1>
+                    <p class="mb-0 mt-2">Merci pour votre achat chez Farma</p>
+                </div>
+                <div class="card-body p-5">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="text-dark">Numéro de commande</h5>
+                            <p class="fs-4 text-primary"><strong>#@Model.Id</strong></p>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <h5 class="text-dark">Date de commande</h5>
+                            <p><strong>@Model.Date.ToString("dd/MM/yyyy à HH:mm")</strong></p>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    @if (Model.Customer != null)
+                    {
+                        <div class="mb-4">
+                            <h5 class="text-dark">Informations client</h5>
+                            <p><strong>Nom:</strong> @Model.Customer.FullName</p>
+                            @if (!string.IsNullOrEmpty(Model.Customer.Email))
+                            {
+                                <p><strong>Email:</strong> @Model.Customer.Email</p>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.Customer.Phone))
+                            {
+                                <p><strong>Téléphone:</strong> @Model.Customer.Phone</p>
+                            }
+                            <p><strong>Points de fidélité:</strong> @Model.Customer.LoyaltyPoints points</p>
+                        </div>
+                        <hr />
+                    }
+
+                    <h5 class="mb-3 text-dark">Détails de la commande</h5>
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Produit</th>
+                                <th>Référence</th>
+                                <th class="text-center">Quantité</th>
+                                <th class="text-end">Prix unitaire</th>
+                                <th class="text-end">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Items)
+                            {
+                                if (item.Product != null)
+                                {
+                                    <tr>
+                                        <td>@item.Product.Name</td>
+                                        <td>@item.Product.Reference</td>
+                                        <td class="text-center">@item.Quantity</td>
+                                        <td class="text-end">@item.UnitPrice.ToString("0.00") €</td>
+                                        <td class="text-end">@item.LineTotal.ToString("0.00") €</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>Sous-total HT:</strong></td>
+                                <td class="text-end"><strong>@((Model.Total / 1.20m).ToString("0.00")) €</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end"><strong>TVA (20%):</strong></td>
+                                <td class="text-end"><strong>@((Model.Total * 0.20m / 1.20m).ToString("0.00")) €</strong></td>
+                            </tr>
+                            <tr class="table-success">
+                                <td colspan="4" class="text-end"><strong class="fs-5">Total TTC:</strong></td>
+                                <td class="text-end"><strong class="fs-5">@Model.Total.ToString("0.00") €</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <hr />
+
+                    <div class="mb-4">
+                        <h5 class="text-dark">Informations de paiement</h5>
+                        @if (!string.IsNullOrEmpty(cardNumber))
+                        {
+                            <p><strong>Carte:</strong> @cardNumber</p>
+                        }
+                        @if (!string.IsNullOrEmpty(cardHolder))
+                        {
+                            <p><strong>Titulaire:</strong> @cardHolder</p>
+                        }
+                        <p class="text-success"><strong>Statut:</strong> Paiement accepté</p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6>ℹ️ Important</h6>
+                        <ul class="mb-0">
+                            <li>Un email de confirmation vous a été envoyé (si vous avez fourni une adresse email).</li>
+                            <li>Vous pouvez consulter votre historique d'achats dans votre espace client.</li>
+                            <li>Vos points de fidélité ont été crédités sur votre compte.</li>
+                        </ul>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-lg me-2">
+                            🏠 Retour à l'accueil
+                        </a>
+                        <a href="@Url.Action("Index", "Catalog")" class="btn btn-outline-primary btn-lg me-2">
+                            📦 Continuer les achats
+                        </a>
+                        @if (Model.CustomerId.HasValue)
+                        {
+                            <a href="@Url.Action("Dashboard", "ClientPortal")" class="btn btn-outline-secondary btn-lg">
+                                👤 Mon espace client
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <button onclick="window.print()" class="btn btn-outline-secondary">
+                    🖨️ Imprimer ce reçu
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        .btn, .alert {
+            display: none !important;
+        }
+        .card {
+            border: 1px solid #000 !important;
+        }
+    }
+</style>
+

@@ -1,0 +1,186 @@
+@{
+    ViewData["Title"] = "Tableau de bord - Gérant";
+    var products = ViewBag.Products as IEnumerable<Parapharmacie.Models.Product> ?? new List<Parapharmacie.Models.Product>();
+    var sales = ViewBag.Sales as IEnumerable<Parapharmacie.Models.Sale> ?? new List<Parapharmacie.Models.Sale>();
+    var customers = ViewBag.Customers as IEnumerable<Parapharmacie.Models.Customer> ?? new List<Parapharmacie.Models.Customer>();
+    var supplierOrders = ViewBag.SupplierOrders as IEnumerable<Parapharmacie.Models.SupplierOrder> ?? new List<Parapharmacie.Models.SupplierOrder>();
+    var suppliers = ViewBag.Suppliers as IEnumerable<Parapharmacie.Models.Supplier> ?? new List<Parapharmacie.Models.Supplier>();
+}
+
+<div class="container-fluid">
+    <h1 class="text-dark mb-4">Tableau de bord - Gérant</h1>
+
+    <div class="alert alert-success">
+        <strong>Rôle :</strong> Gérant - Vous gérez les produits, le stock et les commandes fournisseurs.
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@products.Count()</div>
+                    <div class="text-white">Produits actifs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@sales.Count()</div>
+                    <div class="text-white">Ventes totales</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@supplierOrders.Count()</div>
+                    <div class="text-white">Commandes fournisseurs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@suppliers.Count()</div>
+                    <div class="text-white">Fournisseurs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Actions rapides</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-primary" asp-controller="Products" asp-action="Index">📦 Gérer les produits</a>
+                <a class="btn btn-success" asp-controller="SupplierOrders" asp-action="Create">🛒 Commander chez un fournisseur</a>
+                <a class="btn btn-info" asp-controller="SupplierOrders" asp-action="Index">📋 Voir les commandes fournisseurs</a>
+                <a class="btn btn-warning" asp-controller="Sales" asp-action="Index">💰 Voir les ventes</a>
+                <a class="btn btn-secondary" asp-controller="Customers" asp-action="Index">👤 Voir les clients</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stocks à surveiller -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h3 class="text-dark">Stocks à surveiller</h3>
+            @{
+                var lowStock = products.Where(p => p.Stock <= p.ReorderLevel).ToList();
+            }
+            @if (!lowStock.Any())
+            {
+                <div class="alert alert-success">Aucun produit en alerte de stock.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Stock</th>
+                            <th>Seuil</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in lowStock)
+                        {
+                            <tr class="table-warning">
+                                <td>@p.Name</td>
+                                <td><strong>@p.Stock</strong></td>
+                                <td>@p.ReorderLevel</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="Products" asp-action="Edit" asp-route-id="@p.Id">Modifier</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- Commandes fournisseurs en attente -->
+        <div class="col-md-6">
+            <h3 class="text-dark">Commandes fournisseurs en attente</h3>
+            @{
+                var pendingOrders = supplierOrders.Where(o => o.Status == "En attente").OrderByDescending(o => o.OrderDate).Take(5).ToList();
+            }
+            @if (!pendingOrders.Any())
+            {
+                <div class="alert alert-info">Aucune commande en attente.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Fournisseur</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in pendingOrders)
+                        {
+                            var supplier = suppliers.FirstOrDefault(s => s.Id == order.SupplierId);
+                            <tr>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy")</td>
+                                <td>@(supplier?.Name ?? "N/A")</td>
+                                <td><span class="badge bg-warning">@order.Status</span></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="SupplierOrders" asp-action="Details" asp-route-id="@order.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Dernières ventes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Dernières ventes</h3>
+            @{
+                var recentSales = sales.OrderByDescending(s => s.Date).Take(5).ToList();
+            }
+            @if (!recentSales.Any())
+            {
+                <div class="alert alert-info">Aucune vente enregistrée.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sale in recentSales)
+                        {
+                            <tr>
+                                <td>@sale.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(sale.Customer?.FullName ?? "Non renseigné")</td>
+                                <td><strong>@sale.Total.ToString("0.00") €</strong></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,146 @@
+@{
+    ViewData["Title"] = "Tableau de bord - Fournisseur";
+    var orders = ViewBag.Orders as IEnumerable<Parapharmacie.Models.SupplierOrder> ?? new List<Parapharmacie.Models.SupplierOrder>();
+}
+
+<div class="container-fluid">
+    <h1 class="text-dark mb-4">Tableau de bord - Fournisseur</h1>
+
+    <div class="alert alert-warning">
+        <strong>Rôle :</strong> Fournisseur - Vous gérez les commandes reçues de la parapharmacie.
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@orders.Count()</div>
+                    <div class="text-white">Commandes totales</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-warning">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@orders.Count(o => o.Status == "En attente")</div>
+                    <div class="text-white">Commandes en attente</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@orders.Count(o => o.Status == "Réceptionnée")</div>
+                    <div class="text-white">Commandes réceptionnées</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Actions rapides</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-primary" asp-controller="SupplierOrders" asp-action="Index">📋 Voir toutes les commandes</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Commandes en attente -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Commandes en attente de traitement</h3>
+            @{
+                var pendingOrders = orders.Where(o => o.Status == "En attente").OrderByDescending(o => o.OrderDate).ToList();
+            }
+            @if (!pendingOrders.Any())
+            {
+                <div class="alert alert-success">Aucune commande en attente.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date de commande</th>
+                            <th>Nombre d'articles</th>
+                            <th>Statut</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in pendingOrders)
+                        {
+                            <tr>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@order.Items.Count</td>
+                                <td><span class="badge bg-warning">@order.Status</span></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="SupplierOrders" asp-action="Details" asp-route-id="@order.Id">Voir détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <!-- Dernières commandes -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Dernières commandes</h3>
+            @{
+                var recentOrders = orders.OrderByDescending(o => o.OrderDate).Take(10).ToList();
+            }
+            @if (!recentOrders.Any())
+            {
+                <div class="alert alert-info">Aucune commande reçue.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Nombre d'articles</th>
+                            <th>Statut</th>
+                            <th>Date de réception</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in recentOrders)
+                        {
+                            <tr>
+                                <td>@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@order.Items.Count</td>
+                                <td>
+                                    @if (order.Status == "En attente")
+                                    {
+                                        <span class="badge bg-warning">@order.Status</span>
+                                    }
+                                    else if (order.Status == "Réceptionnée")
+                                    {
+                                        <span class="badge bg-success">@order.Status</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@order.Status</span>
+                                    }
+                                </td>
+                                <td>@(order.ReceivedDate.HasValue ? order.ReceivedDate.Value.ToString("dd/MM/yyyy HH:mm") : "-")</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="SupplierOrders" asp-action="Details" asp-route-id="@order.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+

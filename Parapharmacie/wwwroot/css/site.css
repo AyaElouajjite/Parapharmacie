@@ -1,0 +1,54 @@
+html { font-size: 15px; position: relative; min-height: 100%; }
+@media (min-width: 768px) { html { font-size: 16px; } }
+
+body {
+  margin-bottom: 60px;
+  background: linear-gradient(135deg, rgba(21,102,59,0.85), rgba(17,85,136,0.85)), url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+  color: #0f2d25;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+
+.navbar, .footer, .card, .table, .form-control, .form-select, .btn {
+  border-radius: 10px;
+}
+
+.glass-panel {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.5);
+}
+
+.navbar {
+  background: rgba(255,255,255,0.9) !important;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.container {
+  background: rgba(255,255,255,0.9);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.btn-primary { background-color: #0f8a5f; border-color: #0f8a5f; }
+.btn-primary:hover { background-color: #0c6f4c; border-color: #0c6f4c; }
+.btn-success { background-color: #1f9e7a; border-color: #1f9e7a; }
+.btn-success:hover { background-color: #187c60; border-color: #187c60; }
+
+.table thead { background: #e7f5ef; }
+.table-striped>tbody>tr:nth-of-type(odd) { --bs-table-accent-bg: rgba(15,138,95,0.06); }
+
+.card {
+  border: none;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.footer {
+  background: rgba(255,255,255,0.9);
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.form-control:focus, .form-select:focus {
+  box-shadow: 0 0 0 0.1rem rgba(15,138,95,0.25);
+  border-color: #0f8a5f;
+}

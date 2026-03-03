@@ -1,0 +1,138 @@
+@{
+    ViewData["Title"] = "Tableau de bord - Caissier";
+    var products = ViewBag.Products as IEnumerable<Parapharmacie.Models.Product> ?? new List<Parapharmacie.Models.Product>();
+    var sales = ViewBag.Sales as IEnumerable<Parapharmacie.Models.Sale> ?? new List<Parapharmacie.Models.Sale>();
+    var customers = ViewBag.Customers as IEnumerable<Parapharmacie.Models.Customer> ?? new List<Parapharmacie.Models.Customer>();
+}
+
+<div class="container-fluid">
+    <h1 class="text-dark mb-4">Tableau de bord - Caissier</h1>
+
+    <div class="alert alert-info">
+        <strong>Rôle :</strong> Caissier - Vous gérez les ventes et les clients.
+    </div>
+
+    <!-- Statistiques principales -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-bg-primary">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@sales.Count()</div>
+                    <div class="text-white">Ventes totales</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-success">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@sales.Sum(s => s.Total).ToString("0.00") €</div>
+                    <div class="text-white">Chiffre d'affaires total</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-info">
+                <div class="card-body">
+                    <div class="fs-2 fw-bold text-white">@customers.Count()</div>
+                    <div class="text-white">Clients</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-dark">Actions rapides</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-primary" asp-controller="Sales" asp-action="Create">💰 Enregistrer une vente</a>
+                <a class="btn btn-success" asp-controller="Sales" asp-action="Index">📋 Voir toutes les ventes</a>
+                <a class="btn btn-info" asp-controller="Customers" asp-action="Index">👤 Gérer les clients</a>
+                <a class="btn btn-warning" asp-controller="Customers" asp-action="Create">➕ Ajouter un client</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ventes du jour -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h3 class="text-dark">Ventes du jour</h3>
+            @{
+                var todaySales = sales.Where(s => s.Date.Date == DateTime.Today).ToList();
+                var todayTotal = todaySales.Sum(s => s.Total);
+            }
+            @if (!todaySales.Any())
+            {
+                <div class="alert alert-warning">Aucune vente enregistrée aujourd'hui.</div>
+            }
+            else
+            {
+                <div class="alert alert-success">
+                    <strong>@todaySales.Count()</strong> vente(s) aujourd'hui pour un total de <strong>@todayTotal.ToString("0.00") €</strong>
+                </div>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Heure</th>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sale in todaySales.OrderByDescending(s => s.Date).Take(10))
+                        {
+                            <tr>
+                                <td>@sale.Date.ToString("HH:mm")</td>
+                                <td>@(sale.Customer?.FullName ?? "Non renseigné")</td>
+                                <td><strong>@sale.Total.ToString("0.00") €</strong></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- Dernières ventes -->
+        <div class="col-md-6">
+            <h3 class="text-dark">Dernières ventes</h3>
+            @{
+                var recentSales = sales.OrderByDescending(s => s.Date).Take(10).ToList();
+            }
+            @if (!recentSales.Any())
+            {
+                <div class="alert alert-info">Aucune vente enregistrée.</div>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Client</th>
+                            <th>Total</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sale in recentSales)
+                        {
+                            <tr>
+                                <td>@sale.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(sale.Customer?.FullName ?? "Non renseigné")</td>
+                                <td><strong>@sale.Total.ToString("0.00") €</strong></td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="Sales" asp-action="Details" asp-route-id="@sale.Id">Détails</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+</div>
+
