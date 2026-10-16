@@ -1,0 +1,3 @@
+# Statistiques de langage GitHub : ignorer les bibliothèques tierces et les vues
+**/wwwroot/lib/** linguist-vendored
+*.cshtml linguist-detectable=false
